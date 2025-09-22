@@ -1,0 +1,9 @@
+question,baseline_top,baseline_abstain,rerank_top,rerank_abstain
+What protective equipment is recommended for machine operators?,0.804,False,0.398,True
+How to perform lockout/tagout?,0.652,False,0.435,True
+What is Performance Level per ISO 13849-1?,0.650,False,0.432,True
+How should risks be reassessed after installing a safety measure?,0.726,False,0.422,True
+When is it acceptable to use warning signs instead of physical guards?,0.594,False,0.432,True
+What steps should be taken if a machine emergency stop button fails?,0.714,False,0.417,True
+Which international standards are referenced for machine safety?,0.859,False,0.412,True
+How should maintenance staff approach servicing equipment with residual energy?,0.644,False,0.420,True

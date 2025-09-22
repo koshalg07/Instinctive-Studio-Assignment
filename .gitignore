@@ -25,8 +25,17 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-data/
-*.db
+# Data artifacts (keep eval CSV)
+data/*.db
+data/chunks.db
+data/faiss_index.bin
+data/id_mapping.npy
+data/*.npy
+data/*.bin
+data/pdfs/
+data/train_features.jsonl
+data/reranker_lr.joblib
+!data/eval_results.csv
 try.py
 
 # PyInstaller
