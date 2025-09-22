@@ -7,3 +7,4 @@ sqlite-utils
 numpy
 huggingface_hub
 hf_xet
+requests

@@ -9,6 +9,10 @@ from rerank import fetch_candidates_faiss as fetch_candidates
 from rerank import rerank as rerank_candidates
 
 DB_PATH = "data/chunks.db"
+DATA_DIR = "data"
+
+# Ensure data directory exists so the server starts even on fresh clones
+os.makedirs(DATA_DIR, exist_ok=True)
 
 app = Flask(__name__)
 
