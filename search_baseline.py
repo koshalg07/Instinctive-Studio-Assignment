@@ -7,17 +7,13 @@ DB_PATH = "data/chunks.db"
 INDEX_PATH = "data/faiss_index.bin"
 ID_MAP_PATH = "data/id_mapping.npy"
 
-# Load FAISS index
 index = faiss.read_index(INDEX_PATH)
 
-# Load id mapping (maps FAISS row → chunk_id in SQLite)
 id_mapping = np.load(ID_MAP_PATH)
 
-# Load embedding model (must match step 3)
 model = SentenceTransformer("all-mpnet-base-v2")
 
 def search(query, k=5):
-    # Encode query to embedding
     query_emb = model.encode([query], normalize_embeddings=True)
 
     # Search in FAISS
@@ -33,7 +29,6 @@ def search(query, k=5):
         row = cur.fetchone()
         if row:
             chunk_text, doc_id = row
-            # get document title from docs table
             cur.execute("SELECT title FROM docs WHERE doc_id = ?", (doc_id,))
             doc_title = cur.fetchone()[0]
             results.append({
