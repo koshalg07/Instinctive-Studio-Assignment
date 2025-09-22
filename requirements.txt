@@ -7,3 +7,5 @@ sqlite-utils
 numpy
 huggingface_hub
 hf_xet
+scikit-learn
+joblib

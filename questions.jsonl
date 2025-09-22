@@ -1,0 +1,9 @@
+{"q": "What protective equipment is recommended for machine operators?", "positives": [101, 102], "negatives": [205, 310]}
+{"q": "How to perform lockout/tagout?", "positives": [220], "negatives": [450, 451]}
+{"q": "What is Performance Level per ISO 13849-1?", "positives": [330], "negatives": [550, 551]}
+{"q": "How should risks be reassessed after installing a safety measure?", "positives": [400], "negatives": [600, 601]}
+{"q": "When is it acceptable to use warning signs instead of physical guards?", "positives": [420], "negatives": [610, 611]}
+{"q": "What steps should be taken if a machine emergency stop button fails?", "positives": [500], "negatives": [700, 701]}
+{"q": "Which international standards are referenced for machine safety?", "positives": [530], "negatives": [710, 711]}
+{"q": "How should maintenance staff approach servicing equipment with residual energy?", "positives": [600], "negatives": [800, 801]}
+

@@ -1,16 +1,23 @@
 # rerank.py
+import os
 import sqlite3
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer, CrossEncoder
+import joblib
 
 # Paths
 INDEX_PATH = "data/faiss_index.bin"
 MAPPING_PATH = "data/id_mapping.npy"
 DB_PATH = "data/chunks.db"
 
-# Load reranker (cross-encoder)
-reranker = CrossEncoder("cross-encoder/ms-marco-electra-base")
+# Load learned reranker if exists, else fall back to cross-encoder
+LEARNED_PATH = "data/reranker_lr.joblib"
+lr_model = None
+if os.path.exists(LEARNED_PATH):
+    lr_model = joblib.load(LEARNED_PATH)
+else:
+    reranker = CrossEncoder("cross-encoder/ms-marco-electra-base")
 
 # Load retriever (same model used for FAISS index build!)
 retriever = SentenceTransformer("all-mpnet-base-v2")
@@ -43,21 +50,44 @@ def fetch_candidates_faiss(query, top_k=20):
 
 # Rerank with cross-encoder
 def rerank(query, candidates):
-    pairs = [(query, text) for (_, _, text) in candidates]
-    scores = reranker.predict(pairs)
+    # candidates: list of (chunk_id, base_score, text)
+    if lr_model is not None:
+        # Use learned logistic regression with features: [vector_score, bm25_score]
+        # Compute BM25 via FTS table for given candidate chunk_ids
+        from features import bm25_scores  # lazy import
+        chunk_ids = [int(cid) for cid, _, _ in candidates]
+        id_to_bm25 = bm25_scores(query, chunk_ids)
 
-    reranked = []
-    for (chunk_id, base_score, text), new_score in zip(candidates, scores):
-        reranked.append(
-            {
+        reranked = []
+        for chunk_id, base_score, text in candidates:
+            bm25 = id_to_bm25.get(int(chunk_id), 0.0)
+            X = np.array([[float(base_score), float(bm25)]], dtype=np.float32)
+            prob = float(lr_model.predict_proba(X)[0, 1])
+            reranked.append({
                 "chunk_id": int(chunk_id),
                 "base_score": float(base_score),
-                "rerank_score": float(new_score),
+                "bm25_score": float(bm25),
+                "rerank_score": prob,
                 "text": text[:300] + ("..." if len(text) > 300 else ""),
-            }
-        )
-    reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
-    return reranked
+            })
+        reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
+        return reranked
+    else:
+        # Cross-encoder fallback
+        pairs = [(query, text) for (_, _, text) in candidates]
+        scores = reranker.predict(pairs)
+        reranked = []
+        for (chunk_id, base_score, text), new_score in zip(candidates, scores):
+            reranked.append(
+                {
+                    "chunk_id": int(chunk_id),
+                    "base_score": float(base_score),
+                    "rerank_score": float(new_score),
+                    "text": text[:300] + ("..." if len(text) > 300 else ""),
+                }
+            )
+        reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
+        return reranked
 
 # Demo
 if __name__ == "__main__":

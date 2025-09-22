@@ -14,6 +14,7 @@ def init_db():
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS chunks;")
     cur.execute("DROP TABLE IF EXISTS docs;")
+    cur.execute("DROP TABLE IF EXISTS chunks_fts;")
     cur.execute("""
         CREATE TABLE IF NOT EXISTS docs (
             doc_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +32,15 @@ def init_db():
             FOREIGN KEY (doc_id) REFERENCES docs(doc_id)
         )
     """)
+    cur.execute(
+        """
+        CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
+            chunk_text,
+            content='chunks',
+            content_rowid='chunk_id'
+        );
+        """
+    )
     conn.commit()
     return conn
 
@@ -75,6 +85,9 @@ def main():
         for ch in chunks:
             cur.execute("INSERT INTO chunks (doc_id, chunk_text, chunk_sha1) VALUES (?, ?, ?)",
                         (doc_id, ch, sha1_hash(ch)))
+            rowid = cur.lastrowid
+            # Insert into FTS mirror table
+            cur.execute("INSERT INTO chunks_fts(rowid, chunk_text) VALUES (?, ?)", (rowid, ch))
 
         conn.commit()
     conn.close()
